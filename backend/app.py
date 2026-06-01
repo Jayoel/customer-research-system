@@ -5,7 +5,7 @@ import os
 from config import Config, DevelopmentConfig
 from services.qichacha_service import QiChachaService
 from services.news_service import NewsService
-from services.ai_service import AIService
+from services.deepseek_service import DeepSeekService
 from services.web_scraper import WebScraper
 from services.deep_analysis import DeepAnalysis
 
@@ -16,7 +16,7 @@ CORS(app)
 # 初始化服务
 qichacha_service = QiChachaService()
 news_service = NewsService()
-ai_service = AIService()
+deepseek_service = DeepSeekService()  # 更改为DeepSeekService
 web_scraper = WebScraper()
 deep_analysis = DeepAnalysis()
 
@@ -93,9 +93,9 @@ def generate_plan():
         print("[步骤10] 生成智能推荐...")
         smart_recommendations = deep_analysis.generate_smart_recommendations(doctor_info)
         
-        # 11. 生成AI拜访方案
-        print("[步骤11] 生成AI拜访方案...")
-        visit_plan = ai_service.generate_visit_plan({
+        # 11. 使用DeepSeek生成拜访方案
+        print("[步骤11] 使用DeepSeek生成拜访方案...")
+        visit_plan = deepseek_service.generate_visit_plan({
             "name": name,
             "company": company,
             "position": doctor_info.get('position', ''),
@@ -179,7 +179,7 @@ def export_report():
 - **医院**: {company}
 
 ### 专长领域
-{self._format_list(report_data.get('specialization', []))}
+- {chr(10).join(report_data.get('specialization', []))}
 
 ### 学术指标
 - 发表论文数: {report_data.get('publications_count', 0)}
@@ -192,14 +192,15 @@ def export_report():
 ## 🔬 研究方向
 
 ### 活跃研究项目
-{self._format_research_areas(report_data.get('active_research', []))}
+- {chr(10).join([r.get('title', '') for r in report_data.get('active_research', [])])}
 
 ---
 
 ## 📰 研究洞察
 
 ### 微信公众号文章摘要
-{self._format_articles(report_data.get('wechat_articles', []))}
+{chr(10).join([f"- {article.get('title', '')}\
+  热度: {article.get('likes', '0')} 点赞 | {article.get('shares', '0')} 分享" for article in report_data.get('wechat_articles', [])])}
 
 ---
 
@@ -211,7 +212,7 @@ def export_report():
 
 ## 💡 智能推荐
 
-{self._format_recommendations(report_data.get('smart_recommendations', []))}
+{chr(10).join([f"### {rec.get('title', '')}\n{rec.get('description', '')}" for rec in report_data.get('smart_recommendations', [])])}
 
 ---
 
